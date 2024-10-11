@@ -1,6 +1,32 @@
 #include <iostream>
 #include <algorithm>
 
+/**
+ * This program performs basic arithmetic operations (addition, subtraction, multiplication, division)
+ * on two fractions entered by the user and outputs the results in their simplest form.
+ *
+ * Functions:
+ *  - `rutGon(int &a, int &b)`: Reduces the fraction a/b to its simplest form by dividing both
+ *    the numerator and denominator by their greatest common divisor (GCD).
+ *  - `cong(int a1, int b1, int a2, int b2)`: Adds two fractions a1/b1 and a2/b2, reduces the result,
+ *    and prints the simplified fraction.
+ *  - `tru(int a1, int b1, int a2, int b2)`: Subtracts fraction a2/b2 from a1/b1, reduces the result,
+ *    and prints the simplified fraction.
+ *  - `chia(int a1, int b1, int a2, int b2)`: Divides fraction a1/b1 by a2/b2, reduces the result,
+ *    and prints the simplified fraction.
+ *  - `nhan(int a1, int b1, int a2, int b2)`: Multiplies two fractions a1/b1 and a2/b2, reduces the result,
+ *    and prints the simplified fraction.
+ *
+ * Input:
+ *  - Numerator and denominator for two fractions entered by the user.
+ *
+ * Output:
+ *  - The result of the addition, subtraction, multiplication, and division of the two fractions, 
+ *    each in its simplest form.
+ *
+ * @return 0 on successful execution.
+ */
+
 using namespace std;
 
 void rutGon(int &a, int &b){

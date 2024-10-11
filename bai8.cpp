@@ -2,6 +2,7 @@
 #include <string>
 #include <regex>
 #include <ctime>
+#include <iomanip>
 
 using namespace std;
 
@@ -21,8 +22,9 @@ struct SoTietKiem{
     string Ho_ten_khach_hang;
     string CMND;
     Date Ngay_mo_so;
-    double So_tien_gui;
+    long double So_tien_gui;
     double lai_suat;
+    double tien_lai;
 };
 
 bool isLeapYear(int year) {
@@ -64,63 +66,7 @@ bool isValidLoaiTietKiem(const string &loai) {
     return regex_match(loai, pattern);
 }
 
-void Nhap(SoTietKiem &stk){
-    do {
-        cout << "Nhap ma so: ";
-        getline(cin, stk.MaSo);
-        if (!isValidCode(stk.MaSo)) {
-            cout << "Ma so khong hop le! Vui long nhap lai.\n";
-        }
-    }while(!isValidCode(stk.MaSo));
 
-    do {
-        cout << "Nhap loai tiet kiem: ";
-        getline(cin, stk.Loai_tiet_kiem);
-        if (!isValidLoaiTietKiem(stk.Loai_tiet_kiem)) {
-            cout << "Loai tiet kiem khong hop le! Vui long nhap lai.\n";
-        }
-        if (stk.Loai_tiet_kiem == "Ngan han"){
-            stk.lai_suat = lai_suat_ngan_han;
-        }else if (stk.Loai_tiet_kiem == "Dai han"){
-            stk.lai_suat = lai_suat_dai_han;
-        }else if (stk.Loai_tiet_kiem == "Khong ky han"){
-            stk.lai_suat = lai_suat_khong_ky_han;
-        }
-    }while(!isValidLoaiTietKiem(stk.Loai_tiet_kiem));
-
-    do {
-        cout << "Nhap ho ten khach hang: ";
-        getline(cin, stk.Ho_ten_khach_hang);
-        if (!isValidName(stk.Ho_ten_khach_hang)) {
-            cout << "Ho ten khach hang khong hop le! Vui long nhap lai.\n";
-        }
-    }while(!isValidName(stk.Ho_ten_khach_hang));
-
-    do {
-        cout << "Nhap CMND: ";
-        getline(cin, stk.CMND);
-        if (!isValidCMND(stk.CMND)) {
-            cout << "CMND khong hop le! Vui long nhap lai.\n";
-        }
-    }while(!isValidCMND(stk.CMND));
-
-    do {
-        cout << "Nhap ngay mo so (dd mm yyyy): ";
-        cin >> stk.Ngay_mo_so.day >> stk.Ngay_mo_so.month >> stk.Ngay_mo_so.year;
-        if (!verify_input(stk.Ngay_mo_so.day, stk.Ngay_mo_so.month, stk.Ngay_mo_so.year)) {
-            cout << "Ngay mo so khong hop le! Vui long nhap lai.\n";
-        }
-    }while(!verify_input(stk.Ngay_mo_so.day, stk.Ngay_mo_so.month, stk.Ngay_mo_so.year));
-
-    do {
-        cout << "Nhap so tien gui: ";
-        cin >> stk.So_tien_gui;
-        if (stk.So_tien_gui <= 0) {
-            cout << "So tien gui phai lon hon 0 Vui long nhap lai.\n";
-        }
-    } while (stk.So_tien_gui <= 0);
-    cin.ignore();
-}
 
 void HienThiThongTin(SoTietKiem stk){
     cout << "--------------------------\n";
@@ -129,7 +75,7 @@ void HienThiThongTin(SoTietKiem stk){
     cout << "Ho ten khach hang: " << stk.Ho_ten_khach_hang << endl;
     cout << "CMND: " << stk.CMND << endl;
     cout << "Ngay mo so: " << stk.Ngay_mo_so.day << "/" << stk.Ngay_mo_so.month << "/" << stk.Ngay_mo_so.year << endl;
-    cout << "So tien gui: " << stk.So_tien_gui << endl;
+    cout << "So tien gui: " << fixed << setprecision(2) << stk.So_tien_gui << endl;
     cout << "--------------------------\n";
 }
 
@@ -170,10 +116,6 @@ bool sosanhngay2stk(SoTietKiem a, SoTietKiem b){
     return 0;
 }
 
-double TinhTienLai(SoTietKiem stk){
-    double tienlai = 0;
-    return tienlai;
-}
 
 void today(Date &date){
     time_t now = time(0);
@@ -195,7 +137,7 @@ long double calcTienLai(SoTietKiem stk, double tienrut, double rate){
     return tienlai;
 }
 
-void rutTienMain(SoTietKiem &stk, double tienrut){
+void rutTienMain(SoTietKiem &stk){
     Date ngayruttien;
     today(ngayruttien);
     int DayinYear = 365;
@@ -207,31 +149,44 @@ void rutTienMain(SoTietKiem &stk, double tienrut){
         cout << "Ban dang rut tien truoc han! Lai suat se duoc dieu chinh xuong 0.5%/năm.\n";
         rate = 0.5;
     }
-    int choice = 0, ok = 1;
+    int choice = 0, ok = 1, innerok = 1;
+    stk.tien_lai = calcTienLai(stk, stk.So_tien_gui,rate);
+    long double tien_rut, max_tien_rut;
     while(ok){
+        cout << "--------------------------\n";
         cout << "1. Rut toan bo so tien." << endl;
         cout << "2. Rut mot phan so tien." << endl;
         cout << "3. Thoat." << endl;
+        max_tien_rut = stk.So_tien_gui + stk.tien_lai;
+        cout << "So tien hien co: " << fixed << setprecision(2) << max_tien_rut << endl;
+        cout << "--------------------------\n";
         cout << "Lua chon cua ban: ";
         cin >> choice;
-        double tien_rut, max_tien_rut;
+        
         switch (choice){
             case 1:
-                tien_rut = calcTienLai(stk, stk.So_tien_gui,rate);
-                cout << "Ban da rut toan bo so tien: " << tien_rut << endl;
+                cout << "Ban da rut toan bo so tien: " << fixed << setprecision(2) << stk.So_tien_gui + stk.tien_lai << endl;
                 stk.So_tien_gui = 0;
+                stk.tien_lai = 0;
                 break;
             case 2:
-                cout << "Nhap so tien can rut: ";
-                cin >> tien_rut;
-                max_tien_rut = calcTienLai(stk,stk.So_tien_gui,rate);
-                cout << "So tien hien co: " << max_tien_rut << endl;
-                if (tien_rut > max_tien_rut){
-                    cout << "Ban khong co du tien Vui long nhap lai.\n";
-                }else{
-                    cout << "Ban da rut so tien: " << tien_rut << endl;
-                    stk.So_tien_gui -= tien_rut;
+                innerok = 1;
+                while(innerok){
+                    cout << "Nhap so tien can rut: ";
+                    cin >> tien_rut;
+                    if (tien_rut > max_tien_rut){
+                        cout << "Ban khong co du tien Vui long nhap lai.\n";
+                    }else{
+                        cout << "Ban da rut so tien: " << fixed << setprecision(2) << tien_rut << endl;
+                        if (tien_rut > stk.tien_lai){
+                            tien_rut -= stk.tien_lai;
+                            stk.tien_lai = 0;
+                        }
+                        stk.So_tien_gui -= tien_rut;
+                        innerok = 0;
+                    }
                 }
+                
                 break;
             case 3:
                 ok = 0;
@@ -309,11 +264,70 @@ void LietKeMain(SoTietKiem stk[], int n){
     }
 }
 
+void Nhap(SoTietKiem &stk){
+    do {
+        cout << "Nhap ma so: ";
+        getline(cin, stk.MaSo);
+        if (!isValidCode(stk.MaSo)) {
+            cout << "Ma so khong hop le! Vui long nhap lai.\n";
+        }
+    }while(!isValidCode(stk.MaSo));
+
+    do {
+        cout << "Nhap loai tiet kiem: ";
+        getline(cin, stk.Loai_tiet_kiem);
+        if (!isValidLoaiTietKiem(stk.Loai_tiet_kiem)) {
+            cout << "Loai tiet kiem khong hop le! Vui long nhap lai.\n";
+        }
+        if (stk.Loai_tiet_kiem == "Ngan han"){
+            stk.lai_suat = lai_suat_ngan_han;
+        }else if (stk.Loai_tiet_kiem == "Dai han"){
+            stk.lai_suat = lai_suat_dai_han;
+        }else if (stk.Loai_tiet_kiem == "Khong ky han"){
+            stk.lai_suat = lai_suat_khong_ky_han;
+        }
+    }while(!isValidLoaiTietKiem(stk.Loai_tiet_kiem));
+
+    do {
+        cout << "Nhap ho ten khach hang: ";
+        getline(cin, stk.Ho_ten_khach_hang);
+        if (!isValidName(stk.Ho_ten_khach_hang)) {
+            cout << "Ho ten khach hang khong hop le! Vui long nhap lai.\n";
+        }
+    }while(!isValidName(stk.Ho_ten_khach_hang));
+
+    do {
+        cout << "Nhap CMND: ";
+        getline(cin, stk.CMND);
+        if (!isValidCMND(stk.CMND)) {
+            cout << "CMND khong hop le! Vui long nhap lai.\n";
+        }
+    }while(!isValidCMND(stk.CMND));
+
+    do {
+        cout << "Nhap ngay mo so (dd mm yyyy): ";
+        cin >> stk.Ngay_mo_so.day >> stk.Ngay_mo_so.month >> stk.Ngay_mo_so.year;
+        if (!verify_input(stk.Ngay_mo_so.day, stk.Ngay_mo_so.month, stk.Ngay_mo_so.year)) {
+            cout << "Ngay mo so khong hop le! Vui long nhap lai.\n";
+        }
+    }while(!verify_input(stk.Ngay_mo_so.day, stk.Ngay_mo_so.month, stk.Ngay_mo_so.year));
+
+    do {
+        cout << "Nhap so tien gui: ";
+        cin >> stk.So_tien_gui;
+        if (stk.So_tien_gui <= 0) {
+            cout << "So tien gui phai lon hon 0 Vui long nhap lai.\n";
+        }
+        stk.tien_lai = calcTienLai(stk, stk.So_tien_gui, stk.lai_suat);
+    } while (stk.So_tien_gui <= 0);
+    cin.ignore();
+}
+
 void capnhatLaisuat(SoTietKiem &stk, double laisuat){
     stk.lai_suat = laisuat;
     cout << "Da cap nhat lai suat cho so tiet kiem: " << stk.MaSo << endl;
-    long double tienlai = calcTienLai(stk, stk.So_tien_gui, stk.lai_suat);
-    cout << "So tien lai hien tai: " << tienlai << endl;
+    stk.tien_lai = calcTienLai(stk, stk.So_tien_gui, stk.lai_suat);
+    cout << "So tien lai hien tai: " << fixed << setprecision(2) << stk.tien_lai << endl;
 }
 
 int main(){
@@ -339,7 +353,8 @@ int main(){
         cin >> choice;
         string tukhoa;
         string masotietkiem;
-        long double tienrut, laisuat;
+        long double laisuat;
+        int found = 0;
         switch (choice){
             case 1:
                 cout << "Nhap thong tin cua so tiet kiem can tim: ";
@@ -354,6 +369,7 @@ int main(){
                 sortMain(stk, n);
                 break;
             case 4:
+                found = 0;
                 cin.ignore();
                 do {
                     cout << "Nhap ma so tiet kiem: ";
@@ -362,15 +378,21 @@ int main(){
                         cout << "Ma so khong hop le! Vui long nhap lai.\n";
                     }
                 }while(!isValidCode(masotietkiem));
+                cout << "Nhap lai suat moi: ";
                 cin >> laisuat;
                 for (int i = 0; i < n; i++){
                     if (stk[i].MaSo == masotietkiem){
                         capnhatLaisuat(stk[i], laisuat);
+                        found = 1;
                         break;
                     }
+                }
+                if (!found){
+                    cout << "Khong tim thay so tiet kiem co ma so: " << masotietkiem << endl;
                 }
                 break;
             case 5:
+                found = 0;
                 cin.ignore();
                 do {
                     cout << "Nhap ma so tiet kiem: ";
@@ -381,13 +403,17 @@ int main(){
                 }while(!isValidCode(masotietkiem));
                 for (int i = 0; i < n; i++){
                     if (stk[i].MaSo == masotietkiem){
-                        long double tienlai = calcTienLai(stk[i], stk[i].So_tien_gui, stk[i].lai_suat);
-                        cout << "So tien lai hien tai: " << tienlai << endl;
+                        cout << "So tien lai hien tai: " << stk[i].tien_lai << endl;
+                        found = 1;
                         break;
                     }
                 }
+                if (!found){
+                    cout << "Khong tim thay so tiet kiem co ma so: " << masotietkiem << endl;
+                }
                 break;
             case 6:
+                found = 0;
                 cin.ignore();
                 do {
                     cout << "Nhap ma so tiet kiem: ";
@@ -396,12 +422,15 @@ int main(){
                         cout << "Ma so khong hop le! Vui long nhap lai.\n";
                     }
                 }while(!isValidCode(masotietkiem));
-                cin >> tienrut;
                 for (int i = 0; i < n; i++){
                     if (stk[i].MaSo == masotietkiem){
-                        rutTienMain(stk[i], tienrut);
+                        rutTienMain(stk[i]);
+                        found = 1;
                         break;
                     }
+                }
+                if (!found){
+                    cout << "Khong tim thay so tiet kiem co ma so: " << masotietkiem << endl;
                 }
                 break;
             case 7:
