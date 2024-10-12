@@ -2,35 +2,44 @@
 #include <string>
 #include <regex>
 #include <ctime>
-#include <iomanip>
 
 using namespace std;
 
-const double lai_suat_ngan_han = 1.2;
-const double lai_suat_dai_han = 2.1;
-const double lai_suat_khong_ky_han = 0.5;
+/**
+ * Struct to store information of a flight.
+ * The information includes the flight code, date, time, departure and arrival locations.
+ */
 
-struct Date{
-    int day;
-    int month;
-    int year;
+struct Flight {
+    string MaChuyenBay;
+    int Ngaybay;
+    int Thangbay;
+    int Nambay;
+    int Giobay;
+    int Phutbay;
+    string Noidi;
+    string Noiden;
 };
 
-struct SoTietKiem{
-    string MaSo;
-    string Loai_tiet_kiem;
-    string Ho_ten_khach_hang;
-    string CMND;
-    Date Ngay_mo_so;
-    long double So_tien_gui;
-    double lai_suat;
-    double tien_lai;
-};
+/**
+ * Checks if a given year is a leap year.
+ * A leap year is divisible by 4, but not by 100, unless it is divisible by 400.
+ * 
+ * @param year The year to be checked.
+ * @return true if the year is a leap year, false otherwise.
+ */
 
 bool isLeapYear(int year) {
     return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
 }
 
+/**
+ * Returns the number of days in a given month of a year.
+ * 
+ * @param month The month for which the number of days is to be calculated.
+ * @param year The year in which the month falls.
+ * @return The number of days in the given month.
+ */
 int daysInMonth(int month, int year) {
     int days_in_month[] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
     if (month == 2 && isLeapYear(year)) {
@@ -39,6 +48,15 @@ int daysInMonth(int month, int year) {
     return days_in_month[month - 1];
 }
 
+/**
+ * Verifies the input date.
+ * The month must be between 1 and 12, and the day must be between 1 and the number of days in the month.
+ * 
+ * @param day The day of the date.
+ * @param month The month of the date.
+ * @param year The year of the date.
+ * @return true if the date is valid, false otherwise.
+ */
 bool verify_input(int day, int month, int year){
     if (month >= 1 && month <= 12 && day <= daysInMonth(month, year) && day >= 1){
         return 1;
@@ -46,401 +64,287 @@ bool verify_input(int day, int month, int year){
     return 0;
 }
 
-bool isValidCode(const string &code) {
+/**
+ * Checks if a given string is a valid flight code.
+ * A valid flight code contains between 1 and 5 alphanumeric characters.
+ * 
+ * @param code The string to be checked.
+ * @return true if the string is a valid flight code, false otherwise.
+ */
+bool isValidFlightCode(const string &code) {
     regex pattern("^[A-Za-z0-9]{1,5}$");
     return regex_match(code, pattern);
 }
 
-bool isValidCMND(const string &code) {
-    regex pattern("^(\\d{9}|\\d{12})$");
-    return regex_match(code, pattern);
-}
-
-bool isValidName(const string &place) {
-    regex pattern("^[A-Za-z\\s]{1,30}$");
+/**
+ * Checks if a given string is a valid place name.
+ * A valid place name contains between 1 and 20 alphabetic characters or spaces.
+ * 
+ * @param place The string to be checked.
+ * @return true if the string is a valid place name, false otherwise.
+ */
+bool isValidPlace(const string &place) {
+    regex pattern("^[A-Za-z\\s]{1,20}$");
     return regex_match(place, pattern);
 }
 
-bool isValidLoaiTietKiem(const string &loai) {
-    regex pattern("^(Ngan han|Dai han|Khong ky han)$");
-    return regex_match(loai, pattern);
+/**
+ * Checks if a given string is a valid time.
+ * A valid time is in the format "HH:MM", where HH is between 00 and 23, and MM is between 00 and 59.
+ * 
+ * @param time The string to be checked.
+ * @return true if the string is a valid time, false otherwise.
+ */
+bool isValidTime(const string &time) {
+    regex pattern("^([01][0-9]|2[0-3]):([0-5][0-9])$");
+    return regex_match(time, pattern);
 }
 
+/**
+ * Parses a time string in the format "HH:MM" and stores the hours and minutes in a Flight object.
+ * 
+ * @param time The time string to be parsed.
+ * @param flight The Flight object in which to store the hours and minutes.
+ */
+void parseTime(const string &time, Flight &flight) {
+    flight.Giobay = stoi(time.substr(0, 2));
+    flight.Phutbay = stoi(time.substr(3, 2));
+}
 
+/**
+ * Prompts the user to enter information for a Flight.
+ * 
+ * @param flight The Flight to be filled with information.
+ */
+void nhap(Flight &flight){
+    do {
+        cout << "Nhap ma chuyen bay: ";
+        getline(cin, flight.MaChuyenBay);
+        if (!isValidFlightCode(flight.MaChuyenBay)) {
+            cout << "Ma chuyen bay khong hop le! Vui long nhap lai.\n";
+        }
+    }while(!isValidFlightCode(flight.MaChuyenBay));
+    
+    do {
+        cout << "Nhap ngay bay (dd mm yyyy): ";
+        cin >> flight.Ngaybay >> flight.Thangbay >> flight.Nambay;
+        if (!verify_input(flight.Ngaybay, flight.Thangbay, flight.Nambay)) {
+            cout << "Ngay bay khong hop le! Vui long nhap lai.\n";
+        }
+    }while(!verify_input(flight.Ngaybay, flight.Thangbay, flight.Nambay));
+    string thoigianbay;
+    cin.ignore();
+    do {
+        cout << "Nhap gio bay (HH:MM): ";
+        getline(cin, thoigianbay);
+        
+        if (!isValidTime(thoigianbay)) {
+            cout << "Gio bay khong hop le! Vui long nhap lai.\n";
+        }else
+            parseTime(thoigianbay, flight);
+    }while(!isValidTime(thoigianbay));
 
-void HienThiThongTin(SoTietKiem stk){
+    do {
+        cout << "Nhap noi di: ";
+        getline(cin, flight.Noidi);
+        if (!isValidPlace(flight.Noidi)) {
+            cout << "Noi di khong hop le! Vui long nhap lai.\n";
+        }
+    }while(!isValidPlace(flight.Noidi));
+
+    do {
+        cout << "Nhap noi den: ";
+        getline(cin, flight.Noiden);
+        if (!isValidPlace(flight.Noiden)) {
+            cout << "Noi den khong hop le! Vui long nhap lai.\n";
+        }
+    }while(!isValidPlace(flight.Noiden));
+}
+
+/**
+ * Displays the information of a Flight.
+ * 
+ * @param flight The Flight to be displayed.
+ */
+void HienThiThongTinChuyenBay(const Flight &flight) {
     cout << "--------------------------\n";
-    cout << "Ma so: " << stk.MaSo << endl;
-    cout << "Loai tiet kiem: " << stk.Loai_tiet_kiem << endl;
-    cout << "Ho ten khach hang: " << stk.Ho_ten_khach_hang << endl;
-    cout << "CMND: " << stk.CMND << endl;
-    cout << "Ngay mo so: " << stk.Ngay_mo_so.day << "/" << stk.Ngay_mo_so.month << "/" << stk.Ngay_mo_so.year << endl;
-    cout << "So tien gui: " << fixed << setprecision(2) << stk.So_tien_gui << endl;
+    cout << "Ma chuyen bay: " << flight.MaChuyenBay << endl;
+    cout << "Noi di: " << flight.Noidi << endl;
+    cout << "Noi den: " << flight.Noiden << endl;
+    cout << "Ngay bay: " << flight.Ngaybay << "/" << flight.Thangbay << "/" << flight.Nambay << endl;
+    cout << "Gio bay: " << flight.Giobay << ":" << (flight.Phutbay < 10 ? "0" : "") << flight.Phutbay << endl;
     cout << "--------------------------\n";
 }
 
+/**
+ * Converts a string to lowercase.
+ * 
+ * @param s The string to be converted.
+ * @return The lowercase version of the string.
+ */
 string toLower(string s) {
     transform(s.begin(), s.end(), s.begin(), ::tolower);
     return s;
 }
-
-void TimKiemTheoMaSo(SoTietKiem stk[], string tuKhoa, int n) {
+/**
+ * Searches for a flight by flight code, departure, or destination.
+ * 
+ * @param flight The array of flights.
+ * @param tuKhoa The keyword to search for.
+ * @param n The number of flights in the array.
+ */
+void TimKiemChuyenBay(Flight flight[], string tuKhoa, int n) {
     bool found = false;
     string tuKhoaLower = toLower(tuKhoa);
     for (int i = 0; i < n; i++) {
-        string MaSoLower = toLower(stk[i].MaSo);
-        string CMND = stk[i].CMND;
-        if (CMND == tuKhoa || MaSoLower == tuKhoaLower) {
-            cout << "Da tim thay so tiet kiem: " << endl;
-            HienThiThongTin(stk[i]);
+        string MaChuyenBayLower = toLower(flight[i].MaChuyenBay);
+        string NoidiLower = toLower(flight[i].Noidi);
+        string NoidenLower = toLower(flight[i].Noiden);
+        if (MaChuyenBayLower.find(tuKhoaLower) != string::npos || NoidiLower.find(tuKhoaLower) != string::npos || NoidenLower.find(tuKhoaLower) != string::npos ) {
+            cout << "Da tim thay chuyen bay: " << endl;
+            HienThiThongTinChuyenBay(flight[i]);
             found = true;
         }
     }
     if (!found) {
-        cout << "Khong tim thay so tiet kiem lien quan den \"" << tuKhoa << "\"\n";
+        cout << "Khong tim thay chuyen bay nao voi ten \"" << tuKhoa << "\"\n";
     }
 }
+/**
+ * Searches for flights on a given date.
+ * 
+ * @param flight The array of flights.
+ * @param n The number of flights in the array.
+ */
+void TimKiemTheoNgay(Flight flight[], int n){
+    int Ngay, Thang, Nam;
+    do {
+        cout << "Nhap ngay bay can tim kiem (dd mm yyyy): ";
+        cin >> Ngay >> Thang >> Nam;
+        if (!verify_input(Ngay, Thang, Nam)) {
+            cout << "Ngay bay khong hop le! Vui long nhap lai.\n";
+        }
+    }while(!verify_input(Ngay, Thang, Nam));
 
-bool sosanhngay2stk(SoTietKiem a, SoTietKiem b){
-    if (a.Ngay_mo_so.year < b.Ngay_mo_so.year){
-        return 1;
-    }else if (a.Ngay_mo_so.year == b.Ngay_mo_so.year){
-        if (a.Ngay_mo_so.month < b.Ngay_mo_so.month){
-            return 1;
-        }else if (a.Ngay_mo_so.month == b.Ngay_mo_so.month){
-            if (a.Ngay_mo_so.day <= b.Ngay_mo_so.day){
-                return 1;
-            }
+    bool found = false;
+    for (int i = 0; i < n; i++){
+        if (flight[i].Ngaybay == Ngay && flight[i].Thangbay == Thang && flight[i].Nambay == Nam){
+            cout << "Da tim thay chuyen bay: " << endl;
+            HienThiThongTinChuyenBay(flight[i]);
+            found = true;
         }
     }
-    return 0;
-}
 
-
-void today(Date &date){
-    time_t now = time(0);
-    tm *ltm = localtime(&now);
-    date.day = ltm->tm_mday;
-    date.month = 1 + ltm->tm_mon;
-    date.year = 1900 + ltm->tm_year;
-}
-
-long double calcTienLai(SoTietKiem stk, double tienrut, double rate){
-    Date ngayruttien;
-    today(ngayruttien);
-    int DayinYear = 365;
-    int thoigian =  (ngayruttien.year - stk.Ngay_mo_so.year) * DayinYear + 
-    (ngayruttien.month - stk.Ngay_mo_so.month) * 30 + 
-    (ngayruttien.day - stk.Ngay_mo_so.day);
-    long double tienlai = 0;
-    tienlai = tienrut * (rate/100) * (thoigian / double(365));
-    return tienlai;
-}
-
-void rutTienMain(SoTietKiem &stk){
-    Date ngayruttien;
-    today(ngayruttien);
-    int DayinYear = 365;
-    int thoigian =  (ngayruttien.year - stk.Ngay_mo_so.year) * DayinYear + 
-    (ngayruttien.month - stk.Ngay_mo_so.month) * 30 + 
-    (ngayruttien.day - stk.Ngay_mo_so.day);
-    double rate = stk.lai_suat;
-    if (thoigian < 180){
-        cout << "Ban dang rut tien truoc han! Lai suat se duoc dieu chinh xuong 0.5%/năm.\n";
-        rate = 0.5;
+    if (!found) {
+        cout << "Khong tim thay chuyen bay nao bay vao ngay " << Ngay << "/" << Thang << "/" << Nam << "\n";
     }
-    int choice = 0, ok = 1, innerok = 1;
-    stk.tien_lai = calcTienLai(stk, stk.So_tien_gui,rate);
-    long double tien_rut, max_tien_rut;
-    while(ok){
-        cout << "--------------------------\n";
-        cout << "1. Rut toan bo so tien." << endl;
-        cout << "2. Rut mot phan so tien." << endl;
-        cout << "3. Thoat." << endl;
-        max_tien_rut = stk.So_tien_gui + stk.tien_lai;
-        cout << "So tien hien co: " << fixed << setprecision(2) << max_tien_rut << endl;
-        cout << "--------------------------\n";
-        cout << "Lua chon cua ban: ";
-        cin >> choice;
-        
-        switch (choice){
-            case 1:
-                cout << "Ban da rut toan bo so tien: " << fixed << setprecision(2) << stk.So_tien_gui + stk.tien_lai << endl;
-                stk.So_tien_gui = 0;
-                stk.tien_lai = 0;
-                break;
-            case 2:
-                innerok = 1;
-                while(innerok){
-                    cout << "Nhap so tien can rut: ";
-                    cin >> tien_rut;
-                    if (tien_rut > max_tien_rut){
-                        cout << "Ban khong co du tien Vui long nhap lai.\n";
-                    }else{
-                        cout << "Ban da rut so tien: " << fixed << setprecision(2) << tien_rut << endl;
-                        if (tien_rut > stk.tien_lai){
-                            tien_rut -= stk.tien_lai;
-                            stk.tien_lai = 0;
-                        }
-                        stk.So_tien_gui -= tien_rut;
-                        innerok = 0;
+}
+/**
+ * Counts the number of flights from a given departure to a given destination.
+ * 
+ * @param flight The array of flights.
+ * @param n The number of flights in the array.
+ * @param noidi The departure location.
+ * @param noiden The destination location.
+ */
+void SoLuongChuyenBay(Flight flight[], int n, string noidi, string noiden){
+    int count = 0;
+    for (int i = 0; i < n; i++){
+        if (toLower(flight[i].Noidi) == toLower(noidi) && toLower(flight[i].Noiden) == toLower(noiden)){
+            count++;
+        }
+    }
+    cout << "So luong chuyen bay di tu " << noidi << " den " << noiden << " la: " << count << endl;
+}
+/**
+ * Compares two flights based on their departure date and time.
+ * 
+ * @param a The first flight.
+ * @param b The second flight.
+ * @return true if the first flight is earlier than the second flight, false otherwise.
+ */
+bool sosanh2chuyenbay(Flight a, Flight b){
+    if (a.Nambay < b.Nambay){
+        return 1;
+    }else if (a.Nambay == b.Nambay){
+        if (a.Thangbay < b.Thangbay){
+            return 1;
+        }else if (a.Thangbay == b.Thangbay){
+            if (a.Ngaybay < b.Ngaybay){
+                return 1;
+            }else if (a.Ngaybay == b.Ngaybay){
+                if (a.Giobay < b.Giobay){
+                    return 1;
+                }else if (a.Giobay == b.Giobay){
+                    if (a.Phutbay < b.Phutbay){
+                        return 1;
                     }
                 }
-                
-                break;
-            case 3:
-                ok = 0;
-                break;
-            default:
-                cout << "Lua chon khong hop le. Vui long nhap lai." << endl;
-        }
-    }
-}
-
-bool sosanh2date(Date a, Date b){
-    if (a.year < b.year){
-        return 1;
-    }else if (a.year == b.year){
-        if (a.month < b.month){
-            return 1;
-        }else if (a.month == b.month){
-            if (a.day <= b.day){
-                return 1;
             }
         }
     }
     return 0;
 }
-
-bool sosanhtien2stk(SoTietKiem a, SoTietKiem b){
-    if (a.So_tien_gui > b.So_tien_gui){
-        return 1;
-    }
-    return 0;
-}
-
-void sortMain(SoTietKiem stk[], int n){
-    int choice = 0, ok = 1;
-    while(ok){
-        cout << "1. Sap xep danh sach theo so tien giam dan." << endl;
-        cout << "2. Sap xep danh sach theo ngay mo so tang dan." << endl;
-        cout << "3. Thoat." << endl;
-        cout << "Lua chon cua ban: ";
-        cin >> choice;
-        switch (choice){
-            case 1:
-                cout << "Danh sach sau khi sap xep theo so tien giam dan: " << endl;
-                sort(stk, stk + n, sosanhtien2stk);
-                for (int i = 0; i < n; i++){
-                    HienThiThongTin(stk[i]);
-                }
-                break;
-            case 2:
-                cout << "Danh sach sau khi sap xep theo ngay mo so tang dan: " << endl;
-                sort(stk, stk + n, sosanhngay2stk);
-                for (int i = 0; i < n; i++){
-                    HienThiThongTin(stk[i]);
-                }
-                break;
-            case 3:
-                ok = 0;
-                break;
-            default:
-                cout << "Lua chon khong hop le. Vui long nhap lai." << endl;
-        }
-    }
-}
-
-void LietKeMain(SoTietKiem stk[], int n){
-    Date ngaybatdau, ngayketthuc;
-    cout << "Nhap ngay bat dau (dd mm yyyy): ";
-    cin >> ngaybatdau.day >> ngaybatdau.month >> ngaybatdau.year;
-    cout << "Nhap ngay ket thuc (dd mm yyyy): ";
-    cin >> ngayketthuc.day >> ngayketthuc.month >> ngayketthuc.year;
-    for (int i = 0; i < n; i++){
-        if (sosanh2date(ngaybatdau, stk[i].Ngay_mo_so) && sosanh2date(stk[i].Ngay_mo_so, ngayketthuc)){
-            HienThiThongTin(stk[i]);
-        }
-    }
-}
-
-void Nhap(SoTietKiem &stk){
-    do {
-        cout << "Nhap ma so: ";
-        getline(cin, stk.MaSo);
-        if (!isValidCode(stk.MaSo)) {
-            cout << "Ma so khong hop le! Vui long nhap lai.\n";
-        }
-    }while(!isValidCode(stk.MaSo));
-
-    do {
-        cout << "Nhap loai tiet kiem: ";
-        getline(cin, stk.Loai_tiet_kiem);
-        if (!isValidLoaiTietKiem(stk.Loai_tiet_kiem)) {
-            cout << "Loai tiet kiem khong hop le! Vui long nhap lai.\n";
-        }
-        if (stk.Loai_tiet_kiem == "Ngan han"){
-            stk.lai_suat = lai_suat_ngan_han;
-        }else if (stk.Loai_tiet_kiem == "Dai han"){
-            stk.lai_suat = lai_suat_dai_han;
-        }else if (stk.Loai_tiet_kiem == "Khong ky han"){
-            stk.lai_suat = lai_suat_khong_ky_han;
-        }
-    }while(!isValidLoaiTietKiem(stk.Loai_tiet_kiem));
-
-    do {
-        cout << "Nhap ho ten khach hang: ";
-        getline(cin, stk.Ho_ten_khach_hang);
-        if (!isValidName(stk.Ho_ten_khach_hang)) {
-            cout << "Ho ten khach hang khong hop le! Vui long nhap lai.\n";
-        }
-    }while(!isValidName(stk.Ho_ten_khach_hang));
-
-    do {
-        cout << "Nhap CMND: ";
-        getline(cin, stk.CMND);
-        if (!isValidCMND(stk.CMND)) {
-            cout << "CMND khong hop le! Vui long nhap lai.\n";
-        }
-    }while(!isValidCMND(stk.CMND));
-
-    do {
-        cout << "Nhap ngay mo so (dd mm yyyy): ";
-        cin >> stk.Ngay_mo_so.day >> stk.Ngay_mo_so.month >> stk.Ngay_mo_so.year;
-        if (!verify_input(stk.Ngay_mo_so.day, stk.Ngay_mo_so.month, stk.Ngay_mo_so.year)) {
-            cout << "Ngay mo so khong hop le! Vui long nhap lai.\n";
-        }
-    }while(!verify_input(stk.Ngay_mo_so.day, stk.Ngay_mo_so.month, stk.Ngay_mo_so.year));
-
-    do {
-        cout << "Nhap so tien gui: ";
-        cin >> stk.So_tien_gui;
-        if (stk.So_tien_gui <= 0) {
-            cout << "So tien gui phai lon hon 0 Vui long nhap lai.\n";
-        }
-        stk.tien_lai = calcTienLai(stk, stk.So_tien_gui, stk.lai_suat);
-    } while (stk.So_tien_gui <= 0);
-    cin.ignore();
-}
-
-void capnhatLaisuat(SoTietKiem &stk, double laisuat){
-    stk.lai_suat = laisuat;
-    cout << "Da cap nhat lai suat cho so tiet kiem: " << stk.MaSo << endl;
-    stk.tien_lai = calcTienLai(stk, stk.So_tien_gui, stk.lai_suat);
-    cout << "So tien lai hien tai: " << fixed << setprecision(2) << stk.tien_lai << endl;
-}
-
+/**
+ * Main function to manage flights.
+ * The program prompts the user to enter information for a number of flights.
+ * It then displays the flights sorted by departure date and time.
+ * The user can search for a flight by flight code, departure, or destination.
+ * The user can also search for flights on a given date or count the number of flights between two locations.
+ * 
+ * @return 0 on successful execution.
+ */
 int main(){
     int n;
-    cout << "Nhap so luong so tiet kiem: ";
+    cout << "Nhap so chuyen bay: ";
     cin >> n;
     cin.ignore();
-    SoTietKiem stk[n];
+    Flight flights[n];
     for (int i = 0; i < n; i++){
-        Nhap(stk[i]);
+        nhap(flights[i]);
+    }
+    sort(flights, flights + n, sosanh2chuyenbay);
+
+    cout << "\nDanh sach chuyen bay sau khi sap xep theo ngay va gio khoi hanh:\n";
+    for (const Flight &cb : flights) {
+        HienThiThongTinChuyenBay(cb);
     }
 
     int choice = 0, ok = 1;
     while(ok){
-        cout << "1. Tim kiem so tiet kiem theo CMND hoac ma so." << endl;
-        cout << "2. Liet ke cac so tiet kiem duoc mo trong mot khoang thoi gian." << endl;
-        cout << "3. Sap xep danh sach so tiet kiem." << endl;
-        cout << "4. Cap nhat lai suat." << endl;
-        cout << "5. Tinh tien lai hien tai." << endl;
-        cout << "6. Rut tien." << endl;
-        cout << "7. Thoat." << endl;
+        cout << "1. Tim kiem chuyen bay theo ma chuyen bay, noi di hoac noi den." << endl;
+        cout << "2. Danh sach cac chuyen bay di trong mot ngay." << endl;
+        cout << "3. So luong chuyen bay di va den tu 1 noi nhat dinh." << endl;
+        cout << "4. Thoat." << endl;
         cout << "Lua chon cua ban: ";
         cin >> choice;
         string tukhoa;
-        string masotietkiem;
-        long double laisuat;
-        int found = 0;
+        string noidi;
+        string noiden;
         switch (choice){
             case 1:
-                cout << "Nhap thong tin cua so tiet kiem can tim: ";
+                cout << "Nhap thong tin cua chuyen bay can tim: ";
                 cin.ignore();
                 getline(cin, tukhoa);
-                TimKiemTheoMaSo(stk, tukhoa, n);
+                TimKiemChuyenBay(flights, tukhoa, n);
                 break;
             case 2:
-                LietKeMain(stk, n);
+                TimKiemTheoNgay(flights, n);
                 break;
             case 3:
-                sortMain(stk, n);
+                cout << "Nhap noi di cua chuyen bay can tim: ";
+                cin.ignore();
+                getline(cin, noidi);
+                cout << "Nhap noi den cua chuyen bay can tim: ";
+                getline(cin, noiden);
+                SoLuongChuyenBay(flights, n, noidi, noiden);
                 break;
             case 4:
-                found = 0;
-                cin.ignore();
-                do {
-                    cout << "Nhap ma so tiet kiem: ";
-                    getline(cin, masotietkiem);
-                    if (!isValidCode(masotietkiem)) {
-                        cout << "Ma so khong hop le! Vui long nhap lai.\n";
-                    }
-                }while(!isValidCode(masotietkiem));
-                cout << "Nhap lai suat moi: ";
-                cin >> laisuat;
-                for (int i = 0; i < n; i++){
-                    if (stk[i].MaSo == masotietkiem){
-                        capnhatLaisuat(stk[i], laisuat);
-                        found = 1;
-                        break;
-                    }
-                }
-                if (!found){
-                    cout << "Khong tim thay so tiet kiem co ma so: " << masotietkiem << endl;
-                }
-                break;
-            case 5:
-                found = 0;
-                cin.ignore();
-                do {
-                    cout << "Nhap ma so tiet kiem: ";
-                    getline(cin, masotietkiem);
-                    if (!isValidCode(masotietkiem)) {
-                        cout << "Ma so khong hop le! Vui long nhap lai.\n";
-                    }
-                }while(!isValidCode(masotietkiem));
-                for (int i = 0; i < n; i++){
-                    if (stk[i].MaSo == masotietkiem){
-                        cout << "So tien lai hien tai: " << stk[i].tien_lai << endl;
-                        found = 1;
-                        break;
-                    }
-                }
-                if (!found){
-                    cout << "Khong tim thay so tiet kiem co ma so: " << masotietkiem << endl;
-                }
-                break;
-            case 6:
-                found = 0;
-                cin.ignore();
-                do {
-                    cout << "Nhap ma so tiet kiem: ";
-                    getline(cin, masotietkiem);
-                    if (!isValidCode(masotietkiem)) {
-                        cout << "Ma so khong hop le! Vui long nhap lai.\n";
-                    }
-                }while(!isValidCode(masotietkiem));
-                for (int i = 0; i < n; i++){
-                    if (stk[i].MaSo == masotietkiem){
-                        rutTienMain(stk[i]);
-                        found = 1;
-                        break;
-                    }
-                }
-                if (!found){
-                    cout << "Khong tim thay so tiet kiem co ma so: " << masotietkiem << endl;
-                }
-                break;
-            case 7:
                 ok = 0;
                 break;
             default:
                 cout << "Lua chon khong hop le. Vui long nhap lai." << endl;
         }
     }
-    
-
     return 0;
 }

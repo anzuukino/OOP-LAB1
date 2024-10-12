@@ -1,237 +1,260 @@
 #include <iostream>
 #include <string>
-#include <regex>
-#include <ctime>
+#include <cctype>
+#include <algorithm> 
 
 using namespace std;
-struct Flight {
-    string MaChuyenBay;
-    int Ngaybay;
-    int Thangbay;
-    int Nambay;
-    int Giobay;
-    int Phutbay;
-    string Noidi;
-    string Noiden;
+
+/**
+ * Struct to store information of a student.
+ * The information includes the student's name, scores in Mathematics, Literature, and Foreign Language,
+ * the average score, and the classification of the student.
+ */
+
+struct HocSinh{
+    string Hoten;
+    double DiemToan;
+    double DiemVan;
+    double DiemNgoaiNgu;
+    double DiemTB;
+    string Phanloai;
 };
 
-bool isLeapYear(int year) {
-    return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
-}
+/**
+ * Checks if a given string is a valid name.
+ * A valid name contains only alphabetic characters and has a length between 2 and 50 characters.
+ * 
+ * @param name The string to be checked.
+ * @return true if the string is a valid name, false otherwise.
+ */
 
-int daysInMonth(int month, int year) {
-    int days_in_month[] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-    if (month == 2 && isLeapYear(year)) {
-        return 29;
+bool isValidName(const string &name) {
+    if (name.length() < 2 || name.length() > 50) {
+        return false;
     }
-    return days_in_month[month - 1];
-}
-
-bool verify_input(int day, int month, int year){
-    if (month >= 1 && month <= 12 && day <= daysInMonth(month, year) && day >= 1){
-        return 1;
+    for (char ch : name) {
+        if (isdigit(ch)) {
+            return false;
+        }
     }
-    return 0;
+    return true;
 }
 
-bool isValidFlightCode(const string &code) {
-    regex pattern("^[A-Za-z0-9]{1,5}$");
-    return regex_match(code, pattern);
+/**
+ * Calculates the average score of a student.
+ * The average score is calculated as the sum of the scores in Mathematics (multiplied by 2), Literature, and Foreign Language, divided by 4.
+ * 
+ * @param hs The student for whom the average score is to be calculated.
+ * @return The average score of the student.
+ */
+
+double TinhDiemTB(HocSinh &hs){
+    return (hs.DiemToan * 2 + hs.DiemVan + hs.DiemNgoaiNgu) / 4;
 }
 
-bool isValidPlace(const string &place) {
-    regex pattern("^[A-Za-z\\s]{1,20}$");
-    return regex_match(place, pattern);
+/**
+ * Classifies a student based on their average score.
+ * The classification is as follows:
+ * - "Xuat sac" for students with an average score of 9 or higher.
+ * - "Gioi" for students with an average score between 8 and 8.9.
+ * - "Kha" for students with an average score between 6.5 and 7.9.
+ * - "Trung binh" for students with an average score between 5 and 6.4.
+ * - "Yeu" for students with an average score below 5.
+ * 
+ * @param hs The student to be classified.
+ * @return The classification of the student.
+ */
+
+string PhanLoai(HocSinh &hs){
+    if (hs.DiemTB >= 9){
+        return "Xuat sac";
+    }
+    else if (hs.DiemTB >= 8){
+        return "Gioi";
+    }
+    else if (hs.DiemTB >= 6.5){
+        return "Kha";
+    }
+    else if (hs.DiemTB >= 5){
+        return "Trung binh";
+    }
+    else{
+        return "Yeu";
+    }
 }
+/**
+ * Displays the information of a student.
+ * 
+ * @param hs The student whose information is to be displayed.
+ */
 
-bool isValidTime(const string &time) {
-    regex pattern("^([01][0-9]|2[0-3]):([0-5][0-9])$");
-    return regex_match(time, pattern);
-}
-
-void parseTime(const string &time, Flight &flight) {
-    flight.Giobay = stoi(time.substr(0, 2));
-    flight.Phutbay = stoi(time.substr(3, 2));
-}
-
-void nhap(Flight &flight){
-    do {
-        cout << "Nhap ma chuyen bay: ";
-        getline(cin, flight.MaChuyenBay);
-        if (!isValidFlightCode(flight.MaChuyenBay)) {
-            cout << "Ma chuyen bay khong hop le! Vui long nhap lai.\n";
-        }
-    }while(!isValidFlightCode(flight.MaChuyenBay));
-    
-    do {
-        cout << "Nhap ngay bay (dd mm yyyy): ";
-        cin >> flight.Ngaybay >> flight.Thangbay >> flight.Nambay;
-        if (!verify_input(flight.Ngaybay, flight.Thangbay, flight.Nambay)) {
-            cout << "Ngay bay khong hop le! Vui long nhap lai.\n";
-        }
-    }while(!verify_input(flight.Ngaybay, flight.Thangbay, flight.Nambay));
-    string thoigianbay;
-    cin.ignore();
-    do {
-        cout << "Nhap gio bay (HH:MM): ";
-        getline(cin, thoigianbay);
-        
-        if (!isValidTime(thoigianbay)) {
-            cout << "Gio bay khong hop le! Vui long nhap lai.\n";
-        }else
-            parseTime(thoigianbay, flight);
-    }while(!isValidTime(thoigianbay));
-
-    do {
-        cout << "Nhap noi di: ";
-        getline(cin, flight.Noidi);
-        if (!isValidPlace(flight.Noidi)) {
-            cout << "Noi di khong hop le! Vui long nhap lai.\n";
-        }
-    }while(!isValidPlace(flight.Noidi));
-
-    do {
-        cout << "Nhap noi den: ";
-        getline(cin, flight.Noiden);
-        if (!isValidPlace(flight.Noiden)) {
-            cout << "Noi den khong hop le! Vui long nhap lai.\n";
-        }
-    }while(!isValidPlace(flight.Noiden));
-}
-void HienThiThongTinChuyenBay(const Flight &flight) {
+void HienThiThongTin(HocSinh hs){
     cout << "--------------------------\n";
-    cout << "Ma chuyen bay: " << flight.MaChuyenBay << endl;
-    cout << "Noi di: " << flight.Noidi << endl;
-    cout << "Noi den: " << flight.Noiden << endl;
-    cout << "Ngay bay: " << flight.Ngaybay << "/" << flight.Thangbay << "/" << flight.Nambay << endl;
-    cout << "Gio bay: " << flight.Giobay << ":" << (flight.Phutbay < 10 ? "0" : "") << flight.Phutbay << endl;
+    cout << "Ho ten: " << hs.Hoten << endl;
+    cout << "Diem toan: " << hs.DiemToan << endl;
+    cout << "Diem van: " << hs.DiemVan << endl;
+    cout << "Diem ngoai ngu: " << hs.DiemNgoaiNgu << endl;
+    cout << "Diem trung binh: " << hs.DiemTB << endl;
+    cout << "Phan loai: " << hs.Phanloai << endl;
     cout << "--------------------------\n";
 }
 
+/**
+ * Finds the student with the lowest score in Mathematics.
+ * 
+ * @param hs The array of students.
+ */
+
+void DanhSachHocSinhDiemToanthapnhat(HocSinh hs[]){
+    double Min = hs[0].DiemToan;
+    int index = 0;
+    for (int i = 1; i < 3; i++){
+        if (hs[i].DiemToan < Min){
+            Min = hs[i].DiemToan;
+            index = i;
+        }
+    }
+    cout << "Hoc sinh co diem toan thap nhat la: " << hs[index].Hoten << endl;
+    cout << "Diem toan: " << hs[index].DiemToan << endl;
+}
+
+/**
+ * Finds the student with the highest average score.
+ * 
+ * @param hs The array of students.
+ */
+void timHocSinhgioinhat(HocSinh hs[]){
+    double Max = hs[0].DiemTB;
+    int index = 0;
+    for (int i = 1; i < 3; i++){
+        if (hs[i].DiemTB > Max){
+            Max = hs[i].DiemTB;
+            index = i;
+        }
+    }
+    cout << "Hoc sinh co diem trung binh cao nhat la: " << hs[index].Hoten << endl;
+    cout << "Diem trung binh: " << hs[index].DiemTB << endl;
+}
+
+/**
+ * Converts a string to lowercase.
+ * 
+ * @param s The string to be converted.
+ * @return The lowercase version of the string.
+ */
 string toLower(string s) {
     transform(s.begin(), s.end(), s.begin(), ::tolower);
     return s;
 }
 
-void TimKiemChuyenBay(Flight flight[], string tuKhoa, int n) {
+/**
+ * Searches for a student by name.
+ * 
+ * @param hs The array of students.
+ * @param tuKhoa The name to search for.
+ */
+void TimKiemTheoTen(HocSinh hs[], string tuKhoa) {
     bool found = false;
     string tuKhoaLower = toLower(tuKhoa);
-    for (int i = 0; i < n; i++) {
-        string MaChuyenBayLower = toLower(flight[i].MaChuyenBay);
-        string NoidiLower = toLower(flight[i].Noidi);
-        string NoidenLower = toLower(flight[i].Noiden);
-        if (MaChuyenBayLower.find(tuKhoaLower) != string::npos || NoidiLower.find(tuKhoaLower) != string::npos || NoidenLower.find(tuKhoaLower) != string::npos ) {
-            cout << "Da tim thay chuyen bay: " << endl;
-            HienThiThongTinChuyenBay(flight[i]);
+    for (int i = 0; i < 3; i++) {
+        string hotenLower = toLower(hs[i].Hoten);
+        if (hotenLower.find(tuKhoaLower) != string::npos) {
+            cout << "Tim thay hoc sinh: " << hs[i].Hoten << endl;
+            HienThiThongTin(hs[i]);
             found = true;
         }
     }
     if (!found) {
-        cout << "Khong tim thay chuyen bay nao voi ten \"" << tuKhoa << "\"\n";
+        cout << "Khong tim thay hoc sinh nao voi ten \"" << tuKhoa << "\"\n";
     }
 }
 
-void TimKiemTheoNgay(Flight flight[], int n){
-    int Ngay, Thang, Nam;
+/**
+ * Prompts the user to enter information for a student.
+ * 
+ * @param hs The student to be filled with information.
+ */
+void Nhap(HocSinh &hs){
     do {
-        cout << "Nhap ngay bay can tim kiem (dd mm yyyy): ";
-        cin >> Ngay >> Thang >> Nam;
-        if (!verify_input(Ngay, Thang, Nam)) {
-            cout << "Ngay bay khong hop le! Vui long nhap lai.\n";
+        cout << "Nhap ho ten (khong chua so, do dai tu 2 den 50 ky tu): ";
+        getline(cin, hs.Hoten);
+        if (!isValidName(hs.Hoten)) {
+            cout << "Ho ten khong hop le! Vui long nhap lai.\n";
         }
-    }while(!verify_input(Ngay, Thang, Nam));
+    } while (!isValidName(hs.Hoten));
 
-    bool found = false;
-    for (int i = 0; i < n; i++){
-        if (flight[i].Ngaybay == Ngay && flight[i].Thangbay == Thang && flight[i].Nambay == Nam){
-            cout << "Da tim thay chuyen bay: " << endl;
-            HienThiThongTinChuyenBay(flight[i]);
-            found = true;
+    do {
+        cout << "Nhap diem toan: ";
+        cin >> hs.DiemToan;
+        if (hs.DiemToan < 0 || hs.DiemToan > 10){
+            cout << "Diem toan khong hop le. Vui long nhap lai." << endl;
         }
-    }
-
-    if (!found) {
-        cout << "Khong tim thay chuyen bay nao bay vao ngay " << Ngay << "/" << Thang << "/" << Nam << "\n";
-    }
-}
-
-void SoLuongChuyenBay(Flight flight[], int n, string noidi, string noiden){
-    int count = 0;
-    for (int i = 0; i < n; i++){
-        if (toLower(flight[i].Noidi) == toLower(noidi) && toLower(flight[i].Noiden) == toLower(noiden)){
-            count++;
+    }while(hs.DiemToan < 0 || hs.DiemToan > 10);
+    
+    do {
+        cout << "Nhap diem van: ";
+        cin >> hs.DiemVan;
+        if (hs.DiemVan < 0 || hs.DiemVan > 10){
+            cout << "Diem van khong hop le. Vui long nhap lai." << endl;
         }
-    }
-    cout << "So luong chuyen bay di tu " << noidi << " den " << noiden << " la: " << count << endl;
-}
+    }while(hs.DiemVan < 0 || hs.DiemVan > 10);
 
-bool sosanh2chuyenbay(Flight a, Flight b){
-    if (a.Nambay < b.Nambay){
-        return 1;
-    }else if (a.Nambay == b.Nambay){
-        if (a.Thangbay < b.Thangbay){
-            return 1;
-        }else if (a.Thangbay == b.Thangbay){
-            if (a.Ngaybay < b.Ngaybay){
-                return 1;
-            }else if (a.Ngaybay == b.Ngaybay){
-                if (a.Giobay < b.Giobay){
-                    return 1;
-                }else if (a.Giobay == b.Giobay){
-                    if (a.Phutbay < b.Phutbay){
-                        return 1;
-                    }
-                }
-            }
+    do {
+        cout << "Nhap diem ngoai ngu: ";
+        cin >> hs.DiemNgoaiNgu;
+        if (hs.DiemNgoaiNgu < 0 || hs.DiemNgoaiNgu > 10){
+            cout << "Diem ngoai ngu khong hop le. Vui long nhap lai." << endl;
         }
-    }
-    return 0;
-}
-
-int main(){
-    int n;
-    cout << "Nhap so chuyen bay: ";
-    cin >> n;
+    }while(hs.DiemNgoaiNgu < 0 || hs.DiemNgoaiNgu > 10);
     cin.ignore();
-    Flight flights[n];
-    for (int i = 0; i < n; i++){
-        nhap(flights[i]);
-    }
-    sort(flights, flights + n, sosanh2chuyenbay);
+    hs.DiemTB = TinhDiemTB(hs);
+    hs.Phanloai = PhanLoai(hs);
+}
 
-    cout << "\nDanh sach chuyen bay sau khi sap xep theo ngay va gio khoi hanh:\n";
-    for (const Flight &cb : flights) {
-        HienThiThongTinChuyenBay(cb);
-    }
 
+/**
+ * Main function to demonstrate the student management system.
+ * The program prompts the user to enter information for three students.
+ * It then displays the information of each student and provides options to:
+ * - Find the student with the highest average score.
+ * - Find the student with the lowest score in Mathematics.
+ * - Search for a student by name.
+ * - Exit the program.
+ * 
+ * @return 0 on successful execution.
+ */
+
+int main() {
+    HocSinh hs[3];
+    for (int i = 0; i < 3; i++){
+        cout << "Nhap thong tin hoc sinh thu " << i+1 << endl;
+        Nhap(hs[i]);
+    }
+    for (int i = 0; i < 3; i++){
+        cout << "Thong tin hoc sinh thu " << i+1 << endl;
+        HienThiThongTin(hs[i]);
+    }
     int choice = 0, ok = 1;
     while(ok){
-        cout << "1. Tim kiem chuyen bay theo ma chuyen bay, noi di hoac noi den." << endl;
-        cout << "2. Danh sach cac chuyen bay di trong mot ngay." << endl;
-        cout << "3. So luong chuyen bay di va den tu 1 noi nhat dinh." << endl;
-        cout << "4. Thoat." << endl;
+        cout << "1. Tim hoc sinh co diem trung binh cao nhat." << endl;
+        cout << "2. Xuat hoc sinh co diem toan thap nhat." << endl;
+        cout << "3. Tim kiem hoc sinh theo ten." << endl;
+        cout << "4. Ket thuc chuong trinh." << endl;
         cout << "Lua chon cua ban: ";
         cin >> choice;
         string tukhoa;
-        string noidi;
-        string noiden;
         switch (choice){
             case 1:
-                cout << "Nhap thong tin cua chuyen bay can tim: ";
-                cin.ignore();
-                getline(cin, tukhoa);
-                TimKiemChuyenBay(flights, tukhoa, n);
+                timHocSinhgioinhat(hs);
                 break;
             case 2:
-                TimKiemTheoNgay(flights, n);
+                DanhSachHocSinhDiemToanthapnhat(hs);
                 break;
             case 3:
-                cout << "Nhap noi di cua chuyen bay can tim: ";
+                cout << "Nhap ten hoc sinh can tim: ";
                 cin.ignore();
-                getline(cin, noidi);
-                cout << "Nhap noi den cua chuyen bay can tim: ";
-                getline(cin, noiden);
-                SoLuongChuyenBay(flights, n, noidi, noiden);
+                getline(cin, tukhoa);
+                TimKiemTheoTen(hs, tukhoa);
                 break;
             case 4:
                 ok = 0;
@@ -240,5 +263,7 @@ int main(){
                 cout << "Lua chon khong hop le. Vui long nhap lai." << endl;
         }
     }
+    
+
     return 0;
 }

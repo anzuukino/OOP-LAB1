@@ -3,29 +3,15 @@
 #include <math.h>
 #include  <cmath> 
 
-/**
- * This program calculates the sine of an angle (in radians) using a Taylor series expansion.
- * It also compares the result with the standard library `sin()` function for accuracy.
- *
- * Functions:
- *  - `fra(long long n)`: Computes the factorial of a given number `n`.
- *  - `Sinx(double x)`: Calculates the sine of angle `x` using the Taylor series expansion.
- *    The series is computed until the current term is smaller than a predefined precision (0.00001).
- *    The angle `x` is reduced modulo `2 * pi` to keep the angle within one full revolution.
- *
- * Input:
- *  - The angle `x` in radians entered by the user.
- *
- * Output:
- *  - The sine of `x` calculated using the Taylor series.
- *  - The sine of `x` calculated using the `sin()` function from the standard library.
- *
- * @return 0 on successful execution.
- */
-
 
 using namespace std;
 
+/**
+ * Computes the factorial of a given number `n`.
+ *
+ * @param n The number for which the factorial is to be computed.
+ * @return The factorial of `n`.
+ */
 
 long long fra(long long n){
     long long res = 1;
@@ -35,27 +21,45 @@ long long fra(long long n){
     return res;
 }
 
+/**
+ * Computes the sine of a given angle `x` using the Maclaurin series expansion.
+ *
+ * @param x The angle in radians for which the sine is to be computed.
+ * @return The sine of the given angle.
+ */
+
 double Sinx(double x){
-    double ans = 0;
+    double res = 0;
     double precision = 0.00001;
+    int flag = 0;
+    if (x < 0) flag = 1;
+    x = fabs(x);
     x = fmod(x,2*M_PI);
-    double check = x;
+    double ans = x;
     long long i = 0;
-    while (check > precision){
-        
-        if (i%2==0) ans += check;
-        else ans -= check;
+    while (ans > precision){
+        if (i%2==0) res += ans;
+        else res -= ans;
         i++;
-        check = pow(x,2*i + 1)/fra(2*i+1);
+        ans = pow(x,2*i + 1)/fra(2*i+1);
     }
-    return ans;
+    return flag == 0 ? res : -res;
 }
+
+/**
+ * Main function to compute the sine of a given angle.
+ * The program prompts the user to input an angle in radians.
+ * It then computes the sine of the angle using both the custom `Sinx` function
+ * and the built-in `sin` function from the `cmath` library.
+ * The results are printed to the console.
+ *
+ * @return 0 on successful execution.
+ */
 
 int main(){
     double x;
     cout << "Nhap x: ";
     cin >> x;
     cout << Sinx(x) << endl;
-    cout << sin(x) << endl;
     return 0;
 }
